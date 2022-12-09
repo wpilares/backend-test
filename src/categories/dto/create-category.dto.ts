@@ -1,4 +1,4 @@
-import { IsString } from 'class-validator';
+import { IsArray, IsOptional, IsString } from 'class-validator';
 
 export class CreateCategoryDto {
   @IsString()
@@ -6,7 +6,4 @@ export class CreateCategoryDto {
 
   @IsString()
   description: string;
-
-  @IsString({ each: true })
-  products: string[];
 }

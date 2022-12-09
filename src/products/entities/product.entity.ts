@@ -1,4 +1,5 @@
 import {
+  BeforeUpdate,
   Column,
   Entity,
   ManyToMany,
@@ -9,6 +10,7 @@ import { Category } from '../../categories/entities/category.entity';
 import { User } from '../../users/entities/user.entity';
 import { Transaction } from '../../transactions/entities/transaction.entity';
 import { BeforeInsert } from 'typeorm';
+import { JoinTable } from 'typeorm';
 
 @Entity()
 export class Product {
@@ -38,12 +40,18 @@ export class Product {
     }
   }
 
-  // @ManyToOne(() => User, (user) => user.products)
-  // seller_user: User;
-  //
-  // @ManyToOne(() => Category, (category) => category.products)
-  // category: Category;
-  //
-  // @ManyToMany(() => Transaction, (transaction) => transaction.products)
-  // transactions: Transaction;
+  @BeforeUpdate()
+  checkStatusUpdate() {
+    this.checkStatusInsert();
+  }
+
+  @ManyToOne(() => User, (user) => user.products)
+  seller_user: User;
+
+  @ManyToOne(() => Category, (category) => category.products)
+  category: Category;
+
+  @ManyToMany(() => Transaction, (transaction) => transaction.products)
+  @JoinTable()
+  transactions: Transaction[];
 }

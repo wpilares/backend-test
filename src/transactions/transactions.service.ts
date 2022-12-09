@@ -1,26 +1,78 @@
-import { Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  Logger,
+  NotFoundException,
+} from '@nestjs/common';
 import { CreateTransactionDto } from './dto/create-transaction.dto';
 import { UpdateTransactionDto } from './dto/update-transaction.dto';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Transaction } from './entities/transaction.entity';
+import { Repository } from 'typeorm';
+import { UsersService } from '../users/users.service';
 
 @Injectable()
 export class TransactionsService {
-  create(createTransactionDto: CreateTransactionDto) {
-    return 'This action adds a new transaction';
+  private readonly logger = new Logger('TransactionsService');
+  constructor(
+    @InjectRepository(Transaction)
+    private readonly transactionRepository: Repository<Transaction>,
+    private usersService: UsersService,
+  ) {}
+
+  async create(createTransactionDto: CreateTransactionDto) {
+    try {
+      const transaction =
+        this.transactionRepository.create(createTransactionDto);
+
+      if (createTransactionDto.buyer_userId) {
+        const user = await this.usersService.findOne(
+          createTransactionDto.buyer_userId,
+        );
+        transaction.buyer_user = user;
+      }
+
+      await this.transactionRepository.save(transaction);
+      return transaction;
+    } catch (error) {
+      this.handleDBExceptions(error);
+    }
   }
 
   findAll() {
-    return `This action returns all transactions`;
+    return this.transactionRepository.find({});
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} transaction`;
+  async findOne(id: string) {
+    const transaction = await this.transactionRepository.findOneBy({ id });
+    if (!transaction)
+      throw new NotFoundException(`Transaction with id ${id} not found`);
+    return transaction;
   }
 
-  update(id: number, updateTransactionDto: UpdateTransactionDto) {
-    return `This action updates a #${id} transaction`;
+  async update(id: string, updateTransactionDto: UpdateTransactionDto) {
+    const transaction = await this.transactionRepository.findOneBy({
+      id: id,
+    });
+
+    if (updateTransactionDto.buyer_userId) {
+      const user = await this.usersService.findOne(
+        updateTransactionDto.buyer_userId,
+      );
+      transaction.buyer_user = user;
+    }
+
+    this.transactionRepository.merge(transaction, updateTransactionDto);
+    return this.transactionRepository.save(transaction);
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} transaction`;
+  async remove(id: string) {
+    const transaction = await this.findOne(id);
+    await this.transactionRepository.remove(transaction);
+  }
+
+  private handleDBExceptions(error: any) {
+    this.logger.error(error);
+    throw new BadRequestException(error.sqlMessage);
   }
 }

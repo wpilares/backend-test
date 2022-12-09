@@ -1,4 +1,11 @@
-import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
+import {
+  BeforeInsert,
+  BeforeUpdate,
+  Column,
+  Entity,
+  OneToMany,
+  PrimaryGeneratedColumn,
+} from 'typeorm';
 import { Product } from '../../products/entities/product.entity';
 import { Transaction } from '../../transactions/entities/transaction.entity';
 
@@ -19,9 +26,19 @@ export class User {
   @Column('text')
   is_admin: string;
 
-  // @OneToMany(() => Product, (product) => product.seller_user)
-  // products: Product;
-  //
-  // @OneToMany(() => Transaction, (transaction) => transaction.buyer_user)
-  // transactions: Transaction;
+  @BeforeInsert()
+  checkFieldsBeforeInsert() {
+    this.email = this.email.toLowerCase().trim();
+  }
+
+  @BeforeUpdate()
+  checkFieldsBeforeUpdate() {
+    this.checkFieldsBeforeInsert();
+  }
+
+  @OneToMany(() => Product, (product) => product.seller_user)
+  products: Product[];
+
+  @OneToMany(() => Transaction, (transaction) => transaction.buyer_user)
+  transactions: Transaction[];
 }

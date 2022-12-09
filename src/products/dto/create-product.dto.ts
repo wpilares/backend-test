@@ -1,4 +1,5 @@
 import {
+  IsArray,
   IsInt,
   IsNumber,
   IsOptional,
@@ -15,10 +16,18 @@ export class CreateProductDto {
 
   @IsNumber()
   @IsInt()
-  @IsPositive()
   quantity: number;
 
   @IsString()
   @IsOptional()
   status: string;
+
+  @IsString()
+  categoryId: string;
+
+  @IsString()
+  seller_userId: string;
+
+  @IsArray()
+  transactionsId: string[];
 }

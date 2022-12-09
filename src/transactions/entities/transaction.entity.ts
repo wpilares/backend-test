@@ -1,4 +1,10 @@
-import { Entity, ManyToMany, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
+import {
+  Column,
+  Entity,
+  ManyToMany,
+  ManyToOne,
+  PrimaryGeneratedColumn,
+} from 'typeorm';
 import { User } from '../../users/entities/user.entity';
 import { Product } from '../../products/entities/product.entity';
 
@@ -7,9 +13,12 @@ export class Transaction {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  // @ManyToOne(() => User, (user) => user.transactions)
-  // buyer_user: User;
-  //
-  // @ManyToMany(() => Product, (product) => product.transactions)
-  // products: Product;
+  @Column()
+  state: string;
+
+  @ManyToOne(() => User, (user) => user.transactions)
+  buyer_user: User;
+
+  @ManyToMany(() => Product, (product) => product.transactions)
+  products: Product[];
 }
